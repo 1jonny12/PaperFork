@@ -1,0 +1,110 @@
+From e27a9f9d9c3a20c05d8a858aa9addcd3d1dfab8a Mon Sep 17 00:00:00 2001
+From: Jonothan <j.j101@hotmail.co.uk>
+Date: Sun, 8 Oct 2023 17:34:52 +0100
+Subject: [PATCH] Custom Jar Changes
+
+
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index fd4e1503e..d46e60a2f 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -331,13 +331,10 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+     }
+ 
+     public void tick(BooleanSupplier booleansupplier) {
+-        GameProfilerFiller gameprofilerfiller = this.getProfiler();
+-
+         this.handlingTick = true;
+-        gameprofilerfiller.push("world border");
+-        this.getWorldBorder().tick();
+-        gameprofilerfiller.popPush("weather");
+-        this.advanceWeatherCycle();
++        //Removed by jonothan
++        //this.getWorldBorder().tick();
++        //this.advanceWeatherCycle();
+         int i = this.getGameRules().getInt(GameRules.RULE_PLAYERS_SLEEPING_PERCENTAGE);
+         long j;
+ 
+@@ -361,30 +358,23 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+             }
+         }
+ 
+-        this.updateSkyBrightness();
++        //this.updateSkyBrightness(); //Removed by jonothan
+         this.tickTime();
+-        gameprofilerfiller.popPush("tickPending");
+         timings.doTickPending.startTiming(); // Spigot
+         if (!this.isDebug()) {
+             j = this.getGameTime();
+-            gameprofilerfiller.push("blockTicks");
+             this.blockTicks.tick(j, 65536, this::tickBlock);
+-            gameprofilerfiller.popPush("fluidTicks");
+-            this.fluidTicks.tick(j, 65536, this::tickFluid);
+-            gameprofilerfiller.pop();
++            //Removed by jonothan
++            //this.fluidTicks.tick(j, 65536, this::tickFluid); //Stops fluid flowing
+         }
+         timings.doTickPending.stopTiming(); // Spigot
+ 
+-        gameprofilerfiller.popPush("raid");
+         this.raids.tick();
+-        gameprofilerfiller.popPush("chunkSource");
+         this.getChunkSource().tick(booleansupplier, true);
+-        gameprofilerfiller.popPush("blockEvents");
+         timings.doSounds.startTiming(); // Spigot
+         this.runBlockEvents();
+         timings.doSounds.stopTiming(); // Spigot
+         this.handlingTick = false;
+-        gameprofilerfiller.pop();
+         boolean flag = true || !this.players.isEmpty() || !this.getForcedChunks().isEmpty(); // CraftBukkit - this prevents entity cleanup, other issues on servers with no players
+ 
+         if (flag) {
+@@ -392,12 +382,9 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+         }
+ 
+         if (flag || this.emptyTime++ < 300) {
+-            gameprofilerfiller.push("entities");
+             timings.tickEntities.startTiming(); // Spigot
+             if (this.dragonFight != null) {
+-                gameprofilerfiller.push("dragonFight");
+                 this.dragonFight.tick();
+-                gameprofilerfiller.pop();
+             }
+ 
+             org.spigotmc.ActivationRange.activateEntities(this); // Spigot
+@@ -407,9 +394,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+                     if (false && this.shouldDiscardEntity(entity)) { // CraftBukkit - We prevent spawning in general, so this butchering is not needed
+                         entity.discard();
+                     } else {
+-                        gameprofilerfiller.push("checkDespawn");
+                         entity.checkDespawn();
+-                        gameprofilerfiller.pop();
+                         if (this.chunkSource.chunkMap.getDistanceManager().inEntityTickingRange(entity.chunkPosition().toLong())) {
+                             Entity entity1 = entity.getVehicle();
+ 
+@@ -421,22 +406,17 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+                                 entity.stopRiding();
+                             }
+ 
+-                            gameprofilerfiller.push("tick");
+                             this.guardEntityTick(this::tickNonPassenger, entity);
+-                            gameprofilerfiller.pop();
+                         }
+                     }
+                 }
+             });
+             timings.entityTick.stopTiming(); // Spigot
+             timings.tickEntities.stopTiming(); // Spigot
+-            gameprofilerfiller.pop();
+             this.tickBlockEntities();
+         }
+ 
+-        gameprofilerfiller.push("entityManagement");
+         this.entityManager.tick();
+-        gameprofilerfiller.pop();
+     }
+ 
+     @Override
+-- 
+2.24.1.windows.2
+
